@@ -1,0 +1,194 @@
+/*
+데이터베이스 연결
+-> DBConn 
+직원 정보 입력
+-> insert
+직원 전체 출력
+-> 전체 직원 수 조회 
+-> select
+-> ArrayList
+-> switch
+직원 검색 출력
+-> select
+->
+직원 정보 수정
+-> update
+직원 정보 삭제
+-> delete
+ */
+
+package com.test;
+
+
+import java.sql.Statement;
+import java.util.ArrayList;
+import java.sql.Connection;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+
+import com.util.DBConn;
+
+public class MemberDAO
+{
+	// 주요 속성 구성
+	private Connection conn;
+	
+	// 데이터베이스 연결 담당 메소드
+	public Connection Connection()
+	{
+		conn = DBConn.getConnection();
+		return conn;
+	}
+	
+	// 정보 입력
+	public int add(MemberDTO dto) throws SQLException
+	{
+		int result = 0;
+		
+		Statement stmt = conn.createStatement();
+		String sql = String.format("INSERT INTO TBL_EMP"
+						+ " (EMP_ID, EMP_NAME, SSN, IBSADATE, CITY_ID, TEL, BUSEO_ID, JIKWI_ID, BASICPAY, SUDANG)"
+						+ " VALUES (EMPSEQ.NEXTVAL, '%s', '%s', '%s'"
+						+ "	,(SELECT CITY_ID FROM TBL_CITY WHERE CITY_NAME = '%s')"
+						+ ", '%s'"
+						+ ", (SELECT BUSEO_ID FROM TBL_BUSEO WHERE BUSEO_NAME = '%s')"
+						+ ", (SELECT JIKWI_ID FROM TBL_JIKWI WHERE JIKWI_NAME = '%s')"
+						+ ", %d, %d)"
+						, dto.getEmpName(), dto.getSsn(), dto.getIbsaDate()
+						, dto.getCityName(), dto.getTel(), dto.getBuseoName(), dto.getJikwiName()
+						, dto.getBasicPay(), dto.getSudang());
+		
+		result = stmt.executeUpdate(sql);
+		stmt.close();
+		return result;
+	}// end add
+	
+	// 전체 직원수
+	public int allCount() throws SQLException
+	{
+		int result = 0;
+		
+		Statement stmt = conn.createStatement();
+		
+		String sql = "SELECT COUNT(*) AS COUNT FROM TBL_EMP";
+		
+		ResultSet rs = stmt.executeQuery(sql);
+		
+		while (rs.next())
+		{
+			result = rs.getInt("COUNT");
+		}
+		
+		rs.close();
+		stmt.close();
+		
+		return result;
+	}// end count
+	
+	// 전체 출력
+	public ArrayList<MemberDTO> lists(String key) throws SQLException
+	{
+		ArrayList<MemberDTO> result = new ArrayList<MemberDTO>();
+		
+		Statement stmt = conn.createStatement();
+		
+		String sql = String.format("SELECT E.EMP_ID, E.EMP_NAME, E.SSN, E.IBSADATE AS IBSADATE, C.CITY_NAME, E.TEL, B.BUSEO_NAME, J.JIKWI_NAME, E.BASICPAY, E.SUDANG, (E.BASICPAY + E.SUDANG) AS PAY FROM TBL_EMP E, TBL_CITY C, TBL_BUSEO B, TBL_JIKWI J WHERE E.CITY_ID = C.CITY_ID AND E.BUSEO_ID = B.BUSEO_ID AND E.JIKWI_ID = J.JIKWI_ID ORDER BY %s", key);
+		
+		ResultSet rs = stmt.executeQuery(sql);
+		
+		while (rs.next())
+		{
+			MemberDTO dto = new MemberDTO();
+			
+			dto.setEmpid(rs.getInt("EMP_ID"));
+			dto.setEmpName(rs.getString("EMP_NAME"));
+			dto.setSsn(rs.getString("SSN"));
+			dto.setIbsaDate(rs.getString("IBSADATE"));
+			dto.setCityName(rs.getString("CITY_NAME"));
+			dto.setTel(rs.getString("TEL"));
+			dto.setBuseoName(rs.getString("BUSEO_NAME"));
+			dto.setJikwiName(rs.getString("JIKWI_NAME"));
+			dto.setBasicPay(rs.getInt("BASICPAY"));
+			dto.setSudang(rs.getInt("SUDANG"));
+			dto.setBasicPay(rs.getInt("PAY"));
+			
+			result.add(dto);
+		}
+		
+		rs.close();
+		stmt.close();
+		
+		return result;
+	}// end lists
+	
+	// 검색 인원 출력
+	public int searchCount(String key, String value) throws SQLException
+	{
+		int result = 0;
+		
+		Statement stmt = conn.createStatement();
+		
+		String sql = String.format("SELECT COUNT(*) AS COUNT"
+								+ " FROM EMPVIEW"
+								+ " WHERE %s = '%s'", key, value);
+		
+		ResultSet rs = stmt.executeQuery(sql);
+		
+		while (rs.next())
+		{
+			result = rs.getInt("COUNT");
+			
+		}
+		
+		rs.close();
+		stmt.close();
+		
+		return result;
+	}
+	
+	// 검색 출력 (사번/이름/부서/직위)
+	public ArrayList<MemberDTO> serchLists(String key, String value) throws SQLException
+	{
+		ArrayList<MemberDTO> result = new ArrayList<MemberDTO>();
+		
+		Statement stmt = conn.createStatement();
+		
+		String sql = String.format("SELECT EMP_ID, EMP_NAME, SSN, TO_CHAR(IBSADATE,'YYYY-MM-DD') AS IBSADATE"
+								+ ", CITY_NAME, TEL, BUSEO_NAME, JIKWI_NAME, BASICPAY, SUDANG, PAY"
+								+ " FROM EMPVIEW"
+								+ " WHERE %s= '%s'"
+								, key, value);
+		
+		ResultSet rs = stmt.executeQuery(sql);
+		while (rs.next())
+		{
+			MemberDTO dto = new MemberDTO();
+			
+			dto.setEmpid(rs.getInt("EMP_ID"));	
+			dto.setEmpName(rs.getString("EMP_NAME"));
+			dto.setSsn(rs.getString("SSN"));
+			dto.setIbsaDate(rs.getString("IBSADATE"));
+			dto.setCityName(rs.getString("CITY_NAME"));
+			dto.setTel(rs.getString("TEL"));
+			dto.setBuseoName(rs.getString("BUSEO_NAME"));
+			dto.setJikwiName(rs.getString("JIKWI_NAME"));
+			dto.setBasicPay(rs.getInt("BASICPAY"));
+			dto.setSudang(rs.getInt("SUDANG"));
+			dto.setSalary(rs.getInt("BASICPAY"), rs.getInt("SUDANG"));
+			
+			result.add(dto);
+		}
+		rs.close();
+		stmt.close();
+		
+		return result;
+		
+	}// end searchLists
+	
+	
+	
+	// 정보 수정
+	
+	// 정보 삭제
+	
+}

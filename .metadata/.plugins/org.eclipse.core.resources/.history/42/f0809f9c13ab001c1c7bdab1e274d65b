@@ -1,0 +1,46 @@
+/*==================
+	Process.java
+==================*/
+
+/*
+성적 입력
+성적 전체 출력
+이름 검색 출력
+성적 수정
+성적 삭제
+ */
+package com.test;
+
+public class Process
+{
+	//성적 입력 기능
+	public void sungjukInsert()
+	{
+		
+	}
+	
+	//성적 전체 출력 기능
+	public void sungjukSelectAll()
+	{
+		
+	}
+	
+	//이름 검색 출력 기능
+	public void sungjukSearchName()
+	{
+		
+	}
+	
+	//성적 수정 기능
+	public void sungjukUpdate()
+	{
+		
+	}
+	
+	//성적 삭제 기능
+	public void sungjukDelete()
+	{
+		
+	}
+	
+}
